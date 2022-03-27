@@ -3,6 +3,8 @@ const ctx = canvas.getContext('2d')
 canvas.width = window.innerWidth
 canvas.height = window.innerHeight
 let particleArray = []
+let adjustX = 10
+let adjustY = 10
 
 //mouse 
 const mouse ={
@@ -16,18 +18,18 @@ window.addEventListener('mousemove',function(event){
     mouse.y = event.y
 })
 ctx.fillStyle ='white'
-ctx.font = '50px Verdana'
-ctx.fillText('A',20,60)
-const data = ctx.getImageData(0,0,100,100)
+ctx.font = '40px Verdana'
+ctx.fillText('Shushuno',0,50)
+const textCoordinates = ctx.getImageData(0,0,200,400)
 
 class Particle{
     constructor(x,y){
         this.x = x
         this.y = y
-        this.size = 3
+        this.size = 2
         this.baseX = this.x
         this.baseY = this.y
-        this.density = (Math.random()*30)+1
+        this.density = (Math.random()+0.1)
     }
     draw(){
         ctx.fillStyle = 'white'
@@ -40,20 +42,39 @@ class Particle{
         let dx = mouse.x - this.x
         let dy = mouse.y - this.y
         let distance = Math.sqrt(dx*dx+ dy*dy)
-        if(distance < 80){
-            this.size = 10
+        let forceDirectionX = dx/distance
+        let forceDirectionY = dy/distance
+        let maxDirection = mouse.radius
+        let force = (maxDirection-distance)/maxDirection
+        let diectionX = forceDirectionX *force / this.density *1.5
+        let diectionY = forceDirectionY *force / this.density *1.5
+        if(distance <= mouse.radius){
+            this.x -= diectionX
+            this.y -= diectionY
         }else{
-            this.size = 3
+            if(this.x !== this.baseX){
+                let dx = this.x - this.baseX
+                this.x -= dx/10
+            }
+            if(this.y !== this.baseY){
+                let dy = this.y - this.baseY
+                this.y -= dy/10
+            }
         }
     }
 }
 function init(){
     particleArray = []
-    for(let i = 0 ;i<1000;i++){
-        let x = Math.random() * canvas.width
-        let y = Math.random() * canvas.height
-        particleArray.push(new Particle(x,y))
+    for(let y=0;y<textCoordinates.height;y++){
+        for(let x=0;x<textCoordinates.width;x++){
+            if(textCoordinates.data[(y*4*textCoordinates.width)+(x*4)+3]>128){
+                let positionX = x +adjustX
+                let positionY = y + adjustY
+                particleArray.push(new Particle(positionX*10,positionY*10))
+            }
+        }
     }
+    
 }
 init()
 console.log(particleArray);
