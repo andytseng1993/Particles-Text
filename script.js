@@ -36,17 +36,34 @@ class Particle{
         ctx.closePath()
         ctx.fill()
     }
+    update(){
+        let dx = mouse.x - this.x
+        let dy = mouse.y - this.y
+        let distance = Math.sqrt(dx*dx+ dy*dy)
+        if(distance < 80){
+            this.size = 10
+        }else{
+            this.size = 3
+        }
+    }
 }
 function init(){
     particleArray = []
-    particleArray.push(new Particle(50,50))
+    for(let i = 0 ;i<1000;i++){
+        let x = Math.random() * canvas.width
+        let y = Math.random() * canvas.height
+        particleArray.push(new Particle(x,y))
+    }
 }
 init()
 console.log(particleArray);
 
 function animation(){
     ctx.clearRect(0,0,canvas.width,canvas.height)
-    particleArray.forEach((particle)=>particle.draw())
+    particleArray.forEach((particle)=>{
+        particle.draw()
+        particle.update()
+    })
     requestAnimationFrame(animation)
 }
-
+animation()
