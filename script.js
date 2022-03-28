@@ -5,12 +5,15 @@ canvas.height = window.innerHeight
 let particleArray = []
 let adjustX = 10
 let adjustY = 10
+let scale = 20
+let spreadSpeed = 10
+let particleDistance =50
 
 //mouse 
 const mouse ={
     x : null,
     y: null,
-    radius: 150
+    radius: 200
 }
 
 window.addEventListener('mousemove',function(event){
@@ -18,9 +21,9 @@ window.addEventListener('mousemove',function(event){
     mouse.y = event.y
 })
 ctx.fillStyle ='white'
-ctx.font = '40px Verdana'
-ctx.fillText('Shushuno',0,50)
-const textCoordinates = ctx.getImageData(0,0,200,400)
+ctx.font = '30px Verdana'
+ctx.fillText('S',0,30)
+const textCoordinates = ctx.getImageData(0,0,100,100)
 
 class Particle{
     constructor(x,y){
@@ -46,8 +49,8 @@ class Particle{
         let forceDirectionY = dy/distance
         let maxDirection = mouse.radius
         let force = (maxDirection-distance)/maxDirection
-        let diectionX = forceDirectionX *force / this.density *1.5
-        let diectionY = forceDirectionY *force / this.density *1.5
+        let diectionX = forceDirectionX *force / this.density *spreadSpeed
+        let diectionY = forceDirectionY *force / this.density *spreadSpeed
         if(distance <= mouse.radius){
             this.x -= diectionX
             this.y -= diectionY
@@ -70,7 +73,7 @@ function init(){
             if(textCoordinates.data[(y*4*textCoordinates.width)+(x*4)+3]>128){
                 let positionX = x +adjustX
                 let positionY = y + adjustY
-                particleArray.push(new Particle(positionX*10,positionY*10))
+                particleArray.push(new Particle(positionX*scale,positionY*scale))
             }
         }
     }
@@ -85,6 +88,36 @@ function animation(){
         particle.draw()
         particle.update()
     })
+    connect(mouse.x,mouse.y)
     requestAnimationFrame(animation)
 }
 animation()
+
+function connect(x,y){
+    let opacityValue=1
+    for(let a =0;a<particleArray.length;a++){
+        for(let b = a;b<particleArray.length ;b++){
+            let dx = particleArray[a].x - particleArray[b].x
+            let dy = particleArray[a].y - particleArray[b].y
+            let distance = Math.sqrt(dx*dx+ dy*dy)
+            opacityValue = 1-(distance/particleDistance)
+            ctx.strokeStyle ='rgba(255,255,255,'+opacityValue+')'
+            let mouseDx = particleArray[a].x-x
+            let mouseDy = particleArray[a].y-y
+            let mouseDistance = Math.sqrt(mouseDx*mouseDx+ mouseDy*mouseDy)
+            let opacity = 1- (mouseDistance/mouse.radius)
+            if(mouseDistance<mouse.radius){
+                ctx.strokeStyle =`rgba(255,${255*opacity},${255*opacity},${opacityValue})`
+            }
+
+
+            if(distance< particleDistance){
+                ctx.lineWidth = 2
+                ctx.beginPath()
+                ctx.moveTo(particleArray[a].x,particleArray[a].y)
+                ctx.lineTo(particleArray[b].x,particleArray[b].y)
+                ctx.stroke()
+            }
+        }
+    }
+}
